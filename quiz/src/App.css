@@ -1,0 +1,22 @@
+/* App.css */
+
+body {
+  background-color: #292b2e;
+  color: #ffffff;
+}
+
+.app-title {
+  color: #ffffff;
+  margin-top: 2rem;
+}
+
+.custom-btn {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ffffff;
+}
+
+.custom-btn:hover {
+  background-color: #ffffff;
+  color: #ff5722; /* your hover text color */
+}
