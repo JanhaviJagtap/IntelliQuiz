@@ -20,30 +20,30 @@ public class QuizService {
     @Autowired
     QuestionDao questionDao;
     
-    @Autowired
-    ChatGPTService chatGPTService;
+    // @Autowired
+    // ChatGPTService chatGPTService;
 
     @Autowired
     ObjectMapper objectMapper;
 
-    public Quiz generateQuizFromAI(String topic, String description, int numQ, String difficulty) throws Exception {
-        String json = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
+    // public Quiz generateQuizFromAI(String topic, String description, int numQ, String difficulty) throws Exception {
+    //     String json = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
 
-        // Parse JSON into List<Question>
-        List<Question> questions = objectMapper.readValue(
-                json,
-                objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class)
-        );
+    //     // Parse JSON into List<Question>
+    //     List<Question> questions = objectMapper.readValue(
+    //             json,
+    //             objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class)
+    //     );
 
-        // Persist questions so they get IDs and can be reused
-        questionDao.saveAll(questions);
+    //     // Persist questions so they get IDs and can be reused
+    //     questionDao.saveAll(questions);
 
-        Quiz quiz = new Quiz();
-        quiz.setTitle(topic + " Quiz");
-        quiz.setQuestions(questions);
+    //     Quiz quiz = new Quiz();
+    //     quiz.setTitle(topic + " Quiz");
+    //     quiz.setQuestions(questions);
 
-        return quizDao.save(quiz); // returns Quiz with id
-    }
+    //     return quizDao.save(quiz); // returns Quiz with id
+    // }
 
     // public String createAQuiz(int numQ, String title){
     //     //List<Question> questions = questionDao.randomQuestions(numQ, language);
