@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Question from "./Question";
 import Score from "./score";
 import StartPage from "./StartPage";
+import GPT from "./GPT";
 import "./App.css";
 
 class App extends Component {
@@ -12,6 +13,7 @@ class App extends Component {
         super(props);
         this.state = {
             showStartPage: true,
+            showGPTPage: true,
             selectedLanguage: null,  
             questionBank: [],
             currentQuestion: 0,
@@ -57,37 +59,37 @@ class App extends Component {
     };
 
     handleRestartQuiz = () => {
-    this.setState(
-      {
-        showStartPage: true,
-        questionBank: [],
-        currentQuestion: 0,
-        selectedOption: "",
-        score: 0,
-        quizEnd: false,
-        loading: true,
-        error: null,
-      },
-      () => {
-        this.loadQuiz();
-      }
-    );
-  };
+      this.setState(
+        {
+          showStartPage: true,
+          questionBank: [],
+          currentQuestion: 0,
+          selectedOption: "",
+          score: 0,
+          quizEnd: false,
+          loading: true,
+          error: null,
+        },
+        () => {
+          this.loadQuiz();
+        }
+      );
+    };
 
-  handleLanguageSelect = (language) => {
-    this.setState(
-      {
-        showStartPage: false,
-        selectedLanguage: language,
-        quizEnd: false,
-        currentQuestion: 0,
-        score: 0,
-      },
-      () => {
-        this.loadQuiz(language);
-      }
-    );
-  };
+    handleLanguageSelect = (language) => {
+      this.setState(
+        {
+          showStartPage: false,
+          selectedLanguage: language,
+          quizEnd: false,
+          currentQuestion: 0,
+          score: 0,
+        },
+        () => {
+          this.loadQuiz(language);
+        }
+      );
+    };
 
     checkAnswer = () => {
         const { questionBank, currentQuestion, selectedOption, score } = this.state;
@@ -110,9 +112,19 @@ class App extends Component {
         }
     };
 
+    handleGPTQuiz = () => {
+      this.setState(
+        {
+          showGPTPage:true,
+          showStartPage:false,
+        }
+      )
+    }
+
     render() {
         const {
         showStartPage,
+        showGPTPage,
         questionBank,
         currentQuestion,
         selectedOption,
@@ -127,8 +139,24 @@ class App extends Component {
         <div className="App d-flex flex-column align-items-left justify-content-left">
             <h1 className="app-title">IntelliQUIZ</h1>
             <StartPage onLanguageSelect={this.handleLanguageSelect} />
+            <button className="btn custom-btn" onClick={this.handleGPTQuiz()}></button>
         </div>
         );
+    }
+
+    if (showGPTPage) {
+      return(
+        <div>
+            <form>
+                <textarea defaultValue={"Enter the topic for the quiz"}></textarea>
+                <textarea defaultValue={"Enter number of questions"}></textarea>
+                <textarea defaultValue={"Enter description for the quiz"}></textarea>
+                <textarea defaultValue={"Enter the difficulty level"}></textarea>
+                <button className="btn custom-btn">Start Quiz</button>
+                <GPT />
+            </form>
+        </div>
+      )
     }
 
     if (loading) return <h2>Loading quiz...</h2>;
