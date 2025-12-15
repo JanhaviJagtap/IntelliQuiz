@@ -13,7 +13,7 @@ class App extends Component {
         super(props);
         this.state = {
             showStartPage: true,
-            showGPTPage: true,
+            showGPTPage: false,
             selectedLanguage: null,  
             questionBank: [],
             currentQuestion: 0,
@@ -119,7 +119,7 @@ class App extends Component {
           showStartPage:false,
         }
       )
-    }
+    };
 
     render() {
         const {
@@ -139,7 +139,7 @@ class App extends Component {
         <div className="App d-flex flex-column align-items-left justify-content-left">
             <h1 className="app-title">IntelliQUIZ</h1>
             <StartPage onLanguageSelect={this.handleLanguageSelect} />
-            <button className="btn custom-btn" onClick={this.handleGPTQuiz()}></button>
+            <button className="btn custom-btn" onClick={this.handleGPTQuiz}>Auto generate a Quiz.</button>
         </div>
         );
     }
