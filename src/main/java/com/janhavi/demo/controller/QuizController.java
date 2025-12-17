@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,7 +12,7 @@ import com.janhavi.demo.Question;
 import com.janhavi.demo.service.QuizService;
 
 @RestController
-@RequestMapping("quiz")
+@RequestMapping("/quiz")
 public class QuizController {
 
     @Autowired
@@ -25,17 +23,17 @@ public class QuizController {
     //     return quizService.createAQuiz(numQ, title);
     // }
 
-    @GetMapping("getQuiz")
+    @GetMapping("/getQuiz")
     public List<Question> getQuiz(@RequestParam String language){
         return quizService.getQuiz(language);
     }
 
-    @GetMapping("getJavaQuiz")
+    @GetMapping("/getJavaQuiz")
     public List<Question> getJavaQuiz(@RequestParam String language){
         return quizService.getJavaQuiz();
     }
 
-    @GetMapping("getPyQuiz")
+    @GetMapping("/getPyQuiz")
     public List<Question> getPyQuiz(@RequestParam String language){
         return quizService.getPyQuiz();
     }

@@ -28,7 +28,7 @@ public class QuestionController {
         //return "Hi, these are your questions";
     }
 
-    @PostMapping("add")
+    @PostMapping("/add")
     public String addQuestion(@RequestBody Question question){
         return questionService.addQuestion(question);
     }

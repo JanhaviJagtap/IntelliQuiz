@@ -20,40 +20,47 @@ public class QuizService {
     @Autowired
     QuestionDao questionDao;
     
-    // @Autowired
-    // ChatGPTService chatGPTService;
+    @Autowired
+    ChatGPTService chatGPTService;
 
     @Autowired
     ObjectMapper objectMapper;
 
-    // public Quiz generateQuizFromAI(String topic, String description, int numQ, String difficulty) throws Exception {
-    //     String json = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
+    public Quiz generateQuizFromAI(String topic, String description, int numQ, String difficulty) throws Exception {
+        String json = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
+        // In generateQuizFromAI, after getting json:
+        String cleanJson = json.replaceAll("^.*\\[", "[").replaceAll("\\].*$", "]");
 
-    //     // Parse JSON into List<Question>
-    //     List<Question> questions = objectMapper.readValue(
-    //             json,
-    //             objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class)
-    //     );
+        System.out.println("Raw ChatGPT response: " + json); // DEBUG: see what ChatGPT returns
+    
+        try {
+            List<Question> questions = objectMapper.readValue(cleanJson, 
+                objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class));
+            
+            questionDao.saveAll(questions);
 
-    //     // Persist questions so they get IDs and can be reused
-    //     questionDao.saveAll(questions);
+        Quiz quiz = new Quiz();
+        quiz.setTitle(topic + " Quiz");
+        quiz.setQuestions(questions);
 
-    //     Quiz quiz = new Quiz();
-    //     quiz.setTitle(topic + " Quiz");
-    //     quiz.setQuestions(questions);
+        return quizDao.save(quiz); 
+            // ...
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse ChatGPT JSON: " + e.getMessage(), e);
+        }
+    }
+    
 
-    //     return quizDao.save(quiz); // returns Quiz with id
-    // }
 
     // public String createAQuiz(int numQ, String title){
-    //     //List<Question> questions = questionDao.randomQuestions(numQ, language);
+    //     List<Question> questions = questionDao.randomQuestions(numQ, language);
 
-    //     // Quiz quiz = new Quiz();
-    //     // quiz.setTitle(title);
-    //     // quiz.setQuestions(questions);
-    //     // quizDao.save(quiz);
+    //     Quiz quiz = new Quiz();
+    //     quiz.setTitle(title);
+    //     quiz.setQuestions(questions);
+    //     quizDao.save(quiz);
 
-    //     // return "success";
+    //     return "success";
 
     // }
 

@@ -22,6 +22,10 @@ class App extends Component {
             quizEnd: false,
             loading: true,
             error: null,
+            topic: "",
+            description: "",
+            numQuestions: "",
+            difficulty: "",
         };
     }
 
@@ -42,6 +46,41 @@ class App extends Component {
       this.setState({ error: "Failed to load questions", loading: false });
     }
   };
+
+
+  loadGPTQuiz = async (topic, description, numQuestions, difficulty) => {
+  try {
+    this.setState({ loading: true, error: null });
+
+    const params = new URLSearchParams({
+      topic,
+      description,
+      numQuestions,
+      difficulty,
+    });
+
+    const res = await fetch("http://localhost:8080/quiz/new", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params.toString(),
+    });
+
+    const data = await res.json();
+    // adjust this if your backend returns a Quiz object, e.g. data.questions
+    const qBank = data.map((q, index) => ({
+      id: index + 1,
+      question: q.question_title,
+      options: [q.option1, q.option2, q.option3, q.option4],
+      answer: q.right_answer,
+    }));
+    this.setState({ questionBank: qBank, loading: false });
+  } catch (err) {
+    this.setState({ error: "Failed to load questions", loading: false });
+  }
+};
+
 
   
     async componentDidMount() {
@@ -112,14 +151,39 @@ class App extends Component {
         }
     };
 
-    handleGPTQuiz = () => {
+    handleGPTChange = (e) => {
+      const { name, value } = e.target;
+      this.setState({ [name]: value });
+    };
+
+    handleGPTQuiz = (e) => { 
+      const { topic, description, numQuestions, difficulty } = this.state;
       this.setState(
         {
           showGPTPage:true,
           showStartPage:false,
+        },
+        () => { 
+        //this.createGPTQuiz(topic, description, numQuestions, difficulty);
         }
       )
     };
+
+    createGPTQuiz = (e) =>{
+      e.preventDefault();
+      const { topic, description, numQuestions, difficulty } = this.state;
+      if (!topic || !numQuestions || !difficulty) {
+        alert("Please fill all fields");
+        return;
+      }
+      this.setState(
+        {
+          showGPTPage:false,
+          showStartPage:false,
+        },
+      )
+      this.loadGPTQuiz(topic, description, parseInt(numQuestions), difficulty);
+    }
 
     render() {
         const {
@@ -143,21 +207,44 @@ class App extends Component {
         </div>
         );
     }
+if (showGPTPage) {
+  const { topic, description, numQuestions, difficulty } = this.state;
+  return (
+    <div>
+      <form onSubmit={this.createGPTQuiz}>
+        <textarea
+          name="topic"
+          placeholder="Enter the topic for the quiz"
+          value={topic}
+          onChange={this.handleGPTChange}
+        />
+        <textarea
+          name="numQuestions"
+          placeholder="Enter number of questions"
+          value={numQuestions}
+          onChange={this.handleGPTChange}
+        />
+        <textarea
+          name="description"
+          placeholder="Enter description for the quiz"
+          value={description}
+          onChange={this.handleGPTChange}
+        />
+        <textarea
+          name="difficulty"
+          placeholder="Enter the difficulty level"
+          value={difficulty}
+          onChange={this.handleGPTChange}
+        />
+        <button className="btn custom-btn" type="submit">
+          Start Quiz
+        </button>
+        <GPT />
+      </form>
+    </div>
+  );
+}
 
-    if (showGPTPage) {
-      return(
-        <div>
-            <form>
-                <textarea defaultValue={"Enter the topic for the quiz"}></textarea>
-                <textarea defaultValue={"Enter number of questions"}></textarea>
-                <textarea defaultValue={"Enter description for the quiz"}></textarea>
-                <textarea defaultValue={"Enter the difficulty level"}></textarea>
-                <button className="btn custom-btn">Start Quiz</button>
-                <GPT />
-            </form>
-        </div>
-      )
-    }
 
     if (loading) return <h2>Loading quiz...</h2>;
     if (error) return <h2>{error}</h2>;
