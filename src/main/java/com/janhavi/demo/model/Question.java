@@ -1,4 +1,4 @@
-package com.janhavi.demo;
+package com.janhavi.demo.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +17,7 @@ public class Question {
     private String option2;
     private String option3;
     private String option4;
-    private String right_answer;
+    private String rightAnswer;
     private String difficulty_level;
     private String category;
 }

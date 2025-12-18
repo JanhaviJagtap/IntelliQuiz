@@ -39,7 +39,7 @@ class App extends Component {
         id: index + 1,
         question: q.question_title,
         options: [q.option1, q.option2, q.option3, q.option4],
-        answer: q.right_answer,
+        answer: q.rightAnswer,
       }));
       this.setState({ questionBank: qBank, loading: false });
     } catch (err) {
@@ -73,7 +73,7 @@ class App extends Component {
       id: index + 1,
       question: q.question_title,
       options: [q.option1, q.option2, q.option3, q.option4],
-      answer: q.right_answer,
+      answer: q.rightAnswer,
     }));
     this.setState({ questionBank: qBank, loading: false });
   } catch (err) {

@@ -2,8 +2,6 @@ package com.janhavi.demo.model;
 
 import java.util.List;
 
-import com.janhavi.demo.Question;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

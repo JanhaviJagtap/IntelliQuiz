@@ -1,9 +1,10 @@
 package com.janhavi.demo.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.janhavi.demo.Question;
 import com.janhavi.demo.dao.QuestionDao;
 import com.janhavi.demo.dao.QuizDao;
+import com.janhavi.demo.model.Question;
 import com.janhavi.demo.model.Quiz;
 
 import java.util.List;
@@ -27,28 +28,83 @@ public class QuizService {
     ObjectMapper objectMapper;
 
     public Quiz generateQuizFromAI(String topic, String description, int numQ, String difficulty) throws Exception {
-        String json = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
-        // In generateQuizFromAI, after getting json:
-        String cleanJson = json.replaceAll("^.*\\[", "[").replaceAll("\\].*$", "]");
+    String raw = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
 
-        System.out.println("Raw ChatGPT response: " + json); // DEBUG: see what ChatGPT returns
-    
-        try {
-            List<Question> questions = objectMapper.readValue(cleanJson, 
-                objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class));
-            
-            questionDao.saveAll(questions);
+    System.out.println("RAW JSON FROM OLLAMA:");
+    System.out.println(raw);
 
-        Quiz quiz = new Quiz();
-        quiz.setTitle(topic + " Quiz");
-        quiz.setQuestions(questions);
+    // First parse into a wrapper object
+    JsonNode root = objectMapper.readTree(raw);
+    JsonNode questionsNode = root.get("questions");
+    if (questionsNode == null || !questionsNode.isArray()) {
+        throw new RuntimeException("AI did not return 'questions' array");
+    }
 
-        return quizDao.save(quiz); 
-            // ...
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse ChatGPT JSON: " + e.getMessage(), e);
+    List<Question> questions = objectMapper.readValue(
+        questionsNode.toString(),
+        objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class)
+    );
+
+    // Optional: filter invalid
+    List<Question> valid = questions.stream()
+        .filter(q -> q.getQuestion_title() != null
+                  && q.getOption1() != null
+                  && q.getOption2() != null
+                  && q.getOption3() != null
+                  && q.getOption4() != null
+                  && q.getRightAnswer() != null)
+        .toList();
+
+    if (valid.isEmpty()) {
+        throw new RuntimeException("No valid questions generated");
+    }
+
+    questionDao.saveAll(valid);
+
+    Quiz quiz = new Quiz();
+    quiz.setTitle(topic + " Quiz");
+    quiz.setQuestions(valid);
+    return quizDao.save(quiz);
+}
+
+
+
+private String sanitizeJsonArray(String json) {
+    // Trim whitespace
+    json = json.trim();
+    // If it ends with "]]", cut to the last single closing bracket
+    while (json.endsWith("]]")) {
+        json = json.substring(0, json.length() - 1);
+    }
+    // Optional: if it has content after final ']', cut it off
+    int lastBracket = json.lastIndexOf(']');
+    if (lastBracket != -1 && lastBracket < json.length() - 1) {
+        json = json.substring(0, lastBracket + 1);
+    }
+    return json;
+}
+
+
+// Helper method in QuizService
+private String extractFirstJsonArray(String text) {
+    int start = text.indexOf('[');
+    if (start == -1) throw new RuntimeException("No JSON array found in AI response");
+
+    int depth = 0;
+    for (int i = start; i < text.length(); i++) {
+        char c = text.charAt(i);
+        if (c == '[') depth++;
+        else if (c == ']') {
+            depth--;
+            if (depth == 0) {
+                // include this closing bracket
+                return text.substring(start, i + 1);
+            }
         }
     }
+    throw new RuntimeException("Unclosed JSON array in AI response");
+}
+
     
 
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.janhavi.demo.Question;
+import com.janhavi.demo.model.Question;
 import com.janhavi.demo.service.QuizService;
 
 @RestController
