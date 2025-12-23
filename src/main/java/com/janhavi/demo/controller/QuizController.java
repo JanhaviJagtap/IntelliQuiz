@@ -24,8 +24,8 @@ public class QuizController {
     // }
 
     @GetMapping("/getQuiz")
-    public List<Question> getQuiz(@RequestParam String language){
-        return quizService.getQuiz(language);
+    public List<Question> getQuiz(@RequestParam Integer numQuestions, @RequestParam String language){
+        return quizService.getQuiz(numQuestions, language);
     }
 
     @GetMapping("/getJavaQuiz")

@@ -22,25 +22,10 @@ public class ChatGPTService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public String generateQuestionsRaw(String topic, String description, int numQuestions, String difficulty) {
-    String prompt =
-    "Generate " + numQuestions + " multiple-choice questions for a quiz.\n" +
-    "Topic: " + topic + "\n" +
-    "Description: " + description + "\n" +
-    "Difficulty: " + difficulty + "\n" +
-    "Return ONLY a single valid JSON array.\n" +
-    "The array must look exactly like this example:\n" +
-    "[\n" +
-    "  {\n" +
-    "    \"question_title\": \"...\",\n" +
-    "    \"option1\": \"...\",\n" +
-    "    \"option2\": \"...\",\n" +
-    "    \"option3\": \"...\",\n" +
-    "    \"option4\": \"...\",\n" +
-    "    \"rightAnswer\": \"option1|option2|option3|option4\"\n" +
-    "  }\n" +
-    "]\n" +
-    "Do not return multiple arrays, do not return one question per line, do not prefix fields with [ ] at the top level.";
-        
+    String prompt = "Generate"+numQuestions+ " single-choice questions for a quiz. Topic: "+topic+  description+ difficulty+ ": Return ONLY a single valid JSON array with the whole content inside [ ] brackets and dont mention question number for each question. The array must look exactly like this example: [ { \"question_title\": \"...\", \"option1\": \"...\", \"option2\": \"...\", \"option3\": \"...\", \"option4\": \"...\", \"rightAnswer\": \"option1|option2|option3|option4\" } ] Do not return multiple arrays, do not return one question per line, do not prefix fields with [ ] at the top level.";
+    
+    
+
     Map<String, Object> body = Map.of(
         "model", model,
         "prompt", prompt,

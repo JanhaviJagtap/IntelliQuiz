@@ -1,16 +1,20 @@
 package com.janhavi.demo.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.text.html.HTMLDocument.Iterator;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.janhavi.demo.dao.QuestionDao;
 import com.janhavi.demo.dao.QuizDao;
 import com.janhavi.demo.model.Question;
 import com.janhavi.demo.model.Quiz;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class QuizService {
@@ -29,36 +33,43 @@ public class QuizService {
 
     public Quiz generateQuizFromAI(String topic, String description, int numQ, String difficulty) throws Exception {
     String raw = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
+    System.out.println("RAW JSON FROM OLLAMA: " + raw);
 
-    System.out.println("RAW JSON FROM OLLAMA:");
-    System.out.println(raw);
-
-    // First parse into a wrapper object
     JsonNode root = objectMapper.readTree(raw);
-    JsonNode questionsNode = root.get("questions");
-    if (questionsNode == null || !questionsNode.isArray()) {
-        throw new RuntimeException("AI did not return 'questions' array");
+    List<Question> questions = new ArrayList<>();
+
+    // FIXED: Match "1", "2", "3"... OR "question1", "question2"...
+    Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+    while (fields.hasNext()) {
+        Map.Entry<String, JsonNode> entry = fields.next();
+        String key = entry.getKey();
+        
+        // ✅ Matches "1", "2", "3"... OR "question1", "question2"...
+        if (key.matches("\\d+") || key.matches("question\\d+")) {
+            JsonNode qNode = entry.getValue();
+            Question q = objectMapper.treeToValue(qNode, Question.class);
+            
+            // Skip if missing title
+            if (q.getQuestionTitle() == null) continue;
+            
+            // Set defaults
+            if (q.getDifficultyLevel() == null) q.setDifficultyLevel("easy");
+            if (q.getRightAnswer() == null) continue;  // Skip invalid answers
+            
+            questions.add(q);
+        }
     }
 
-    List<Question> questions = objectMapper.readValue(
-        questionsNode.toString(),
-        objectMapper.getTypeFactory().constructCollectionType(List.class, Question.class)
-    );
+    if (questions.isEmpty()) {
+        throw new RuntimeException("No valid questions found");
+    }
 
-    // Optional: filter invalid
+    // Take only requested number
     List<Question> valid = questions.stream()
-        .filter(q -> q.getQuestion_title() != null
-                  && q.getOption1() != null
-                  && q.getOption2() != null
-                  && q.getOption3() != null
-                  && q.getOption4() != null
-                  && q.getRightAnswer() != null)
+        .limit(numQ)
         .toList();
 
-    if (valid.isEmpty()) {
-        throw new RuntimeException("No valid questions generated");
-    }
-
+    System.out.println("✅ Parsed " + valid.size() + " valid questions");
     questionDao.saveAll(valid);
 
     Quiz quiz = new Quiz();
@@ -66,6 +77,8 @@ public class QuizService {
     quiz.setQuestions(valid);
     return quizDao.save(quiz);
 }
+
+
 
 
 
@@ -120,8 +133,8 @@ private String extractFirstJsonArray(String text) {
 
     // }
 
-    public List<Question> getQuiz(String language){
-        return questionDao.randomQuestions(5, language);
+    public List<Question> getQuiz(Integer numQuestions,     String language){
+        return questionDao.randomQuestions(numQuestions, language);
     }
 
     public List<Question> getJavaQuiz(){

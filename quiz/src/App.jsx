@@ -30,10 +30,15 @@ class App extends Component {
     }
 
     loadQuiz = async (language) => {
+
+  const { numQuestions } = this.state;
     try {
       this.setState({ loading: true, error: null });
-      const res = await fetch(`http://localhost:8080/quiz/getQuiz?language=${language || "java"}`);
+      const res = await fetch(`http://localhost:8080/quiz/getQuiz?numQuestions=${numQuestions || 5 }&language=${language || "java"}`);
       //const res = await fetch("http://localhost:8080/quiz/getQuiz");
+      if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
       const data = await res.json();
       const qBank = data.map((q, index) => ({
         id: index + 1,
@@ -43,6 +48,7 @@ class App extends Component {
       }));
       this.setState({ questionBank: qBank, loading: false });
     } catch (err) {
+      console.error("loadQuiz error:", err);
       this.setState({ error: "Failed to load questions", loading: false });
     }
   };
@@ -84,7 +90,7 @@ class App extends Component {
 
   
     async componentDidMount() {
-      this.loadQuiz();
+      this.loadQuiz(numQuestions);
     }
 
     handleOptionChange = (e) => {
@@ -252,9 +258,16 @@ if (showGPTPage) {
 
     return (
         <div className="App d-flex flex-column align-items-left justify-content-left">
-        <h1 className="app-title">IntelliQUIZ</h1>
+        <div className="app-root">
+          <div className="app-shell">
+            <header className="app-header">
+              <h1 className="brand">IntelliQUIZ</h1>
+            </header>
+
+        <main className="app-main">
         {!quizEnd ? (
             <Question
+            className="question-card"
             question={questionBank[currentQuestion]}
             selectedOption={selectedOption}
             onOptionChange={this.handleOptionChange}
@@ -267,6 +280,9 @@ if (showGPTPage) {
             className="score"
             />
         )}
+        </main>
+          </div>
+        </div>
         </div>
     );
   }
