@@ -2,9 +2,6 @@ package com.janhavi.demo.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.text.html.HTMLDocument.Iterator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,27 +32,17 @@ public class QuizService {
     String raw = chatGPTService.generateQuestionsRaw(topic, description, numQ, difficulty);
     System.out.println("RAW JSON FROM OLLAMA: " + raw);
 
+    // Parse the object with question1, question2, etc.
     JsonNode root = objectMapper.readTree(raw);
     List<Question> questions = new ArrayList<>();
 
-    // FIXED: Match "1", "2", "3"... OR "question1", "question2"...
-    Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
-    while (fields.hasNext()) {
-        Map.Entry<String, JsonNode> entry = fields.next();
-        String key = entry.getKey();
-        
-        // ✅ Matches "1", "2", "3"... OR "question1", "question2"...
-        if (key.matches("\\d+") || key.matches("question\\d+")) {
-            JsonNode qNode = entry.getValue();
+    // Extract all questionN objects
+    for (int i = 1; i <= numQ; i++) {
+        String key = "question" + i;
+        JsonNode qNode = root.get(key);
+        if (qNode != null) {
             Question q = objectMapper.treeToValue(qNode, Question.class);
-            
-            // Skip if missing title
-            if (q.getQuestionTitle() == null) continue;
-            
-            // Set defaults
-            if (q.getDifficultyLevel() == null) q.setDifficultyLevel("easy");
-            if (q.getRightAnswer() == null) continue;  // Skip invalid answers
-            
+            System.out.println(q);
             questions.add(q);
         }
     }
@@ -64,12 +51,11 @@ public class QuizService {
         throw new RuntimeException("No valid questions found");
     }
 
-    // Take only requested number
+    // Filter & save as usual
     List<Question> valid = questions.stream()
-        .limit(numQ)
+        .filter(q -> q.getQuestionTitle() != null && q.getRightAnswer() != null)
         .toList();
 
-    System.out.println("✅ Parsed " + valid.size() + " valid questions");
     questionDao.saveAll(valid);
 
     Quiz quiz = new Quiz();
@@ -77,7 +63,6 @@ public class QuizService {
     quiz.setQuestions(valid);
     return quizDao.save(quiz);
 }
-
 
 
 

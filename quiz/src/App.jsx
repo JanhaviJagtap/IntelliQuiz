@@ -59,10 +59,10 @@ class App extends Component {
     this.setState({ loading: true, error: null });
 
     const params = new URLSearchParams({
-      topic,
-      description,
-      numQuestions,
-      difficulty,
+      topic: topic || "",
+      description: description || "",
+      numQuestions: numQuestions || 5,
+      difficulty: difficulty || "easy",
     });
 
     const res = await fetch("http://localhost:8080/quiz/new", {
@@ -73,23 +73,66 @@ class App extends Component {
       body: params.toString(),
     });
 
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status}`);
+    }
+
     const data = await res.json();
-    // adjust this if your backend returns a Quiz object, e.g. data.questions
-    const qBank = data.map((q, index) => ({
-      id: index + 1,
-      question: q.question_title,
-      options: [q.option1, q.option2, q.option3, q.option4],
-      answer: q.rightAnswer,
-    }));
-    this.setState({ questionBank: qBank, loading: false });
+    console.log("Full response from backend:", data);
+    
+    const questions = data.questions || data || [];
+    
+    if (!Array.isArray(questions) || questions.length === 0) {
+      throw new Error("No questions returned");
+    }
+    
+    console.log("First question from backend:", questions[0]);
+    
+    const qBank = questions.map((q, index) => {
+      const options = [q.option1, q.option2, q.option3, q.option4];
+      
+      // Convert rightAnswer key to actual text
+      let correctAnswerText = "";
+      switch(q.rightAnswer) {
+        case "option1": correctAnswerText = q.option1; break;
+        case "option2": correctAnswerText = q.option2; break;
+        case "option3": correctAnswerText = q.option3; break;
+        case "option4": correctAnswerText = q.option4; break;
+        default: correctAnswerText = q.rightAnswer;
+      }
+      
+      // Try both camelCase and snake_case
+      const questionText = q.questionTitle || q.question_title || q.question || "Question missing";
+      
+      console.log(`Question ${index + 1} text:`, questionText);
+      
+      return {
+        id: index + 1,
+        question: questionText,  // ✅ This is the key field
+        options: options,
+        answer: correctAnswerText,
+      };
+    });
+    
+    console.log("Final mapped qBank:", qBank);
+    
+    this.setState({ 
+      questionBank: qBank, 
+      loading: false,
+      showGPTPage: false 
+    });
   } catch (err) {
-    this.setState({ error: "Failed to load questions", loading: false });
+    console.error("Load GPT Quiz error:", err);
+    this.setState({ 
+      error: `Failed to load questions: ${err.message}`, 
+      loading: false 
+    });
   }
 };
 
 
   
-    async componentDidMount() {
+    async componentDidMount(numQuestions) {
       this.loadQuiz(numQuestions);
     }
 
@@ -137,11 +180,36 @@ class App extends Component {
     };
 
     checkAnswer = () => {
-        const { questionBank, currentQuestion, selectedOption, score } = this.state;
-        if (selectedOption === questionBank[currentQuestion].answer) {
-            this.setState((prevState) => ({ score: prevState.score + 1 }));
-        }
-    };
+  const { questionBank, currentQuestion, selectedOption, score } = this.state;
+  const question = questionBank[currentQuestion];
+  
+  // Convert the answer key (like "option1") to the actual option text
+  let correctAnswer = "";
+  switch(question.answer) {
+    case "option1":
+      correctAnswer = question.options[0];
+      break;
+    case "option2":
+      correctAnswer = question.options[1];
+      break;
+    case "option3":
+      correctAnswer = question.options[2];
+      break;
+    case "option4":
+      correctAnswer = question.options[3];
+      break;
+    default:
+      correctAnswer = question.answer; // fallback
+  }
+  
+  console.log("Selected:", selectedOption);
+  console.log("Correct:", correctAnswer);
+  console.log("Match:", selectedOption === correctAnswer);
+  
+  if (selectedOption === correctAnswer) {
+    this.setState((prevState) => ({ score: prevState.score + 1 }));
+  }
+};
 
     handleNextQuestion = () => {
         const { questionBank, currentQuestion } = this.state;

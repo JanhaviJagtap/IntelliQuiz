@@ -3,28 +3,33 @@
 import React, {Component} from "react";
 import Options from "./Option";
 
-class Question extends Component{
-    render() {
-        const {question, selectedOption, onOptionChange, onSubmit} = this.props;
-
-        return(
-            <div className="">
-                <h3>Question {question.id}</h3>
-                <h5 className="mt-2">{question.question}</h5>
-                <form onSubmit={onSubmit} className="mt-2 mb-2">
-                    <Options
-                        options={question.options}
-                        selectedOption={selectedOption}
-                        onOptionChange={onOptionChange}
-                    />
-                    <button type="submit" className="btn btn-primary mt-2">
-                        SUBMIT
-                    </button>
-                </form>
-                
-            </div>
-        )
-    }
-}
+const Question = ({ question, selectedOption, onOptionChange, onSubmit }) => {
+  return (
+    <div className="question-container">
+      <h3 className="question-text">{question.question}</h3>
+      <form onSubmit={onSubmit}>
+        {question.options.map((option, index) => (
+          <div key={index} className="form-check">
+            <input
+              type="radio"
+              name="option"
+              value={option}
+              checked={selectedOption === option}
+              onChange={onOptionChange}
+              className="form-check-input"
+              id={`option-${index}`}
+            />
+            <label className="form-check-label" htmlFor={`option-${index}`}>
+              {option}
+            </label>
+          </div>
+        ))}
+        <button type="submit" className="btn btn-primary mt-3" disabled={!selectedOption}>
+          Submit Answer
+        </button>
+      </form>
+    </div>
+  );
+};
 
 export default Question;
