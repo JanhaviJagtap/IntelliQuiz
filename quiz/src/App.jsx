@@ -236,7 +236,6 @@ class App extends Component {
         {
           showGPTPage:true,
           showStartPage:false,
-          console.log("im hereee");
         },
         () => { 
         //this.createGPTQuiz(topic, description, numQuestions, difficulty);
