@@ -3,6 +3,7 @@ package com.janhavi.demo.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +14,7 @@ import com.janhavi.demo.service.QuizService;
 
 @RestController
 @RequestMapping("/quiz")
+@CrossOrigin(origins = "http://localhost:5173")
 public class QuizController {
 
     @Autowired
@@ -24,17 +26,17 @@ public class QuizController {
     // }
 
     @GetMapping("/getQuiz")
-    public List<Question> getQuiz(@RequestParam Integer numQuestions, @RequestParam String language){
-        return quizService.getQuiz(numQuestions, language);
+    public List<Question> getQuiz(@RequestParam String language){
+        return quizService.getQuiz(language);
     }
 
     @GetMapping("/getJavaQuiz")
-    public List<Question> getJavaQuiz(@RequestParam String language){
+    public List<Question> getJavaQuiz(){
         return quizService.getJavaQuiz();
     }
 
     @GetMapping("/getPyQuiz")
-    public List<Question> getPyQuiz(@RequestParam String language){
+    public List<Question> getPyQuiz(){
         return quizService.getPyQuiz();
     }
 }

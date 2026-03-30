@@ -15,10 +15,10 @@ public interface QuestionDao extends JpaRepository<Question, Integer>{
     @Query(value = "Select * from question q where category = :language order by Random() limit :numQ", nativeQuery = true)
     List<Question> randomQuestions(@Param("numQ") Integer numQ, @Param("language") String language);
 
-    @Query(value = "Select * from question q where category = java order by Random() limit :numQ", nativeQuery = true)
-    List<Question> javaQuestions(Integer numQ);
+    @Query(value = "Select * from question q where category = 'java' order by Random() limit :numQ", nativeQuery = true)
+    List<Question> javaQuestions(@Param("numQ") Integer numQ);
 
-    @Query(value = "Select * from question q where category = python order by Random() limit :numQ", nativeQuery = true)
-    List<Question> pyQuestions(Integer numQ);
+    @Query(value = "Select * from question q where category = 'python' order by Random() limit :numQ", nativeQuery = true)
+    List<Question> pyQuestions(@Param("numQ") Integer numQ);
 
 }
