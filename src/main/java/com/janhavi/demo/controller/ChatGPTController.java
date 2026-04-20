@@ -1,29 +1,29 @@
 package com.janhavi.demo.controller;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.janhavi.demo.Question;
+import com.janhavi.demo.dao.QuestionDao;
+import com.janhavi.demo.model.Question;
+//import com.janhavi.demo.service.ChatGPTService;
+import com.janhavi.demo.service.OllamaService;
+import com.janhavi.demo.service.QuizService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.janhavi.demo.dao.QuestionDao;
-import com.janhavi.demo.model.Question;
-import com.janhavi.demo.model.Quiz;
+import java.util.List;
 
-import com.janhavi.demo.service.ChatGPTService;
-import com.janhavi.demo.service.QuizService;
-
+/**
+ * Controller for AI-powered quiz generation using OpenAI.
+ * Requires a valid OPENAI_API_KEY in application.properties to be enabled.
+ */
 @RestController
-@RequestMapping("/quiz")
-@CrossOrigin(origins = "http://localhost:5173") 
+@RequestMapping("/ai")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ChatGPTController {
     @Autowired
-    private ChatGPTService chatGPTService;
+    private OllamaService ollamaService;
 
     @Autowired
     private QuizService quizService;
@@ -43,7 +43,7 @@ public class ChatGPTController {
             @RequestParam(defaultValue = "medium") String difficulty) {
 
         try {
-            String json = chatGPTService.generateQuestionsRaw(topic, description, numQuestions, difficulty);
+            String json = ollamaService.generateQuestionsRaw(topic, description, numQuestions, difficulty);
 
             List<Question> questions = objectMapper.readValue(
                     json,

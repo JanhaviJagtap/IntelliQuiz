@@ -1,10 +1,10 @@
 
 import React from 'react';
 
-const Score = ({ score, handleRestartQuiz, numQuestions }) => {
+const Score = ({ score, handleRestartQuiz }) => {
   // Assuming total questions is derived from context or passed separately
   // For now, let's calculate percentage based on a typical 5-question quiz
-  const totalQuestions = numQuestions || 5; // You can make this dynamic
+  const totalQuestions = 10; // You can make this dynamic
   const percentage = Math.round((score / totalQuestions) * 100);
   
   const getScoreMessage = () => {
