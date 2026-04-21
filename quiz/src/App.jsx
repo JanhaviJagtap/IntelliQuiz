@@ -122,9 +122,14 @@ class App extends Component {
   };
 
   checkAnswer = () => {
-    const { questionBank, currentQuestion, selectedOption, score } = this.state;
+    const { questionBank, currentQuestion, selectedOption } = this.state;
     const question = questionBank[currentQuestion];
-    const optionMap = { option1: question.options[0], option2: question.options[1], option3: question.options[2], option4: question.options[3] };
+    const optionMap = {
+      option1: question.options[0],
+      option2: question.options[1],
+      option3: question.options[2],
+      option4: question.options[3],
+    };
     const correctAnswer = optionMap[question.answer] ?? question.answer;
     if (selectedOption === correctAnswer) {
       this.setState((prev) => ({ score: prev.score + 1 }));
@@ -153,7 +158,6 @@ class App extends Component {
     e.preventDefault();
     const { topic, numQuestions, difficulty, description } = this.state;
     if (!topic.trim()) { alert("Please enter a topic"); return; }
-    if (!difficulty) { alert("Please select a difficulty"); return; }
     this.setState({ showGPTPage: false });
     this.loadGPTQuiz(topic, description, parseInt(numQuestions) || 5, difficulty);
   };
@@ -166,7 +170,7 @@ class App extends Component {
       topic, description, numQuestions, difficulty,
     } = this.state;
 
-    // ── Start page ──────────────────────────────────────────
+    /* ── Start page ────────────────────────────────────── */
     if (showStartPage) {
       return (
         <div className="App">
@@ -179,13 +183,13 @@ class App extends Component {
       );
     }
 
-    // ── Ollama / AI quiz form ───────────────────────────────
+    /* ── AI quiz form ──────────────────────────────────── */
     if (showGPTPage) {
       return (
-        <div className="App d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
+        <div className="gpt-form-outer">
           <div className="gpt-form-container">
             <h2 className="gpt-form-title">✨ AI Quiz Generator</h2>
-            <p className="gpt-form-subtitle">Powered by Ollama — no API key needed</p>
+            <p className="gpt-form-subtitle">Powered by Ollama — runs locally, no API key needed</p>
 
             <form onSubmit={this.createGPTQuiz}>
               <div className="form-group">
@@ -239,7 +243,10 @@ class App extends Component {
             </form>
 
             <div style={{ textAlign: "center", marginTop: "1rem" }}>
-              <button className="back-btn" onClick={() => this.setState({ showGPTPage: false, showStartPage: true })}>
+              <button
+                className="back-btn"
+                onClick={() => this.setState({ showGPTPage: false, showStartPage: true })}
+              >
                 ← Back
               </button>
             </div>
@@ -248,10 +255,10 @@ class App extends Component {
       );
     }
 
-    // ── Loading / error states ──────────────────────────────
+    /* ── Loading ───────────────────────────────────────── */
     if (loading) {
       return (
-        <div className="App d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
+        <div className="App" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div className="loading-container">
             <div className="loading-spinner" />
             <p className="loading-text">Generating your quiz...</p>
@@ -260,12 +267,17 @@ class App extends Component {
       );
     }
 
+    /* ── Error ─────────────────────────────────────────── */
     if (error) {
       return (
-        <div className="App d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
+        <div className="App" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div className="error-container">
-            <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>{error}</p>
-            <button className="btn-primary-white" style={{ color: "#c53030", border: "1.5px solid #c53030" }} onClick={() => this.setState({ showStartPage: true, error: null })}>
+            <p style={{ marginBottom: "1rem" }}>{error}</p>
+            <button
+              className="btn-primary-white"
+              style={{ color: "#c53030", border: "1.5px solid #c53030" }}
+              onClick={() => this.setState({ showStartPage: true, error: null })}
+            >
               Back to start
             </button>
           </div>
@@ -275,13 +287,13 @@ class App extends Component {
 
     if (!questionBank.length) {
       return (
-        <div className="App d-flex align-items-center justify-content-center" style={{ minHeight: "100vh" }}>
+        <div className="App" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <p className="loading-text">No questions available.</p>
         </div>
       );
     }
 
-    // ── Quiz ────────────────────────────────────────────────
+    /* ── Quiz ──────────────────────────────────────────── */
     return (
       <div className="app-root">
         <div className="app-shell">
